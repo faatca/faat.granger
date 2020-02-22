@@ -73,7 +73,7 @@ async def terminate_user(request):
 
 @routes.default
 async def default_route(request):
-    log.warn(f"Unrecognized letter request: {request.path} - {request.body}")
+    log.warning(f"Unrecognized letter request: {request.path} - {request.body}")
     await asyncio.sleep(1)
 
 
