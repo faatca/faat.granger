@@ -3,6 +3,8 @@ faat.granger package
 
 This package simplifies the effort required to set up a worker process around RabbitMQ.
 
+This package is compatible with the [faat.corbin](https://github.com/faatca/faat.corbin) framework, except this package runs under asyncio.
+
 It takes a platform independent, but opinionated approach to working with RabbitMQ.
 Taking inspiration from modern web frameworks,
 it simplifies the development of a worker applications to process messages.
@@ -41,7 +43,6 @@ async def main():
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
     )
-    logging.getLogger("pika").setLevel(logging.WARNING)
 
     app = MessageApp(
         url=os.environ["AMQP_URL"],
@@ -95,7 +96,7 @@ log = logging.getLogger(__name__)
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Processes commands from message queue")
+    parser = argparse.ArgumentParser(description="Publish a messages for processing")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("exchange")
     parser.add_argument("path")

@@ -21,7 +21,7 @@ def find_version(*file_paths):
 setup(
     name="faat.granger",
     version=find_version("faat", "granger", "__init__.py"),
-    description="Simplified framework for AMQP workers",
+    description="Simplified async framework for AMQP workers",
     long_description=read("README.md"),
     url="https://faat.ca",
     author="Aaron Milner",
