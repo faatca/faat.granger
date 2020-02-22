@@ -19,14 +19,14 @@ venv\Scripts\pip install faat.granger
 
 ## Getting Started ##
 
-The
+The following example provides a basic look at how this framework can be used.
 
 ```python
-import asyncio
 import argparse
+import asyncio
+import logging
 import os
 from faat.granger import MessageApp, Router
-import logging
 
 log = logging.getLogger(__name__)
 routes = Router()
@@ -35,7 +35,6 @@ routes = Router()
 async def main():
     parser = argparse.ArgumentParser(description="Render letters for a message queue")
     parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument("--workers", type=int, default=10)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -51,7 +50,7 @@ async def main():
         mode="tenacious",
         worker_count=10,
     )
-    await app.serve()
+    asyncio.run(app.serve())
 
 
 @routes.route("/reports/welcome-letter/<name>")
@@ -67,7 +66,7 @@ async def terminate_user(request):
     letter_id = request.path_params["id"]
     data = request.json()
     print(f"-- Letter {letter_id} --")
-    print(f"Hi {data['name']}. We are {data['emotion']} to see you go."
+    print(f"Hi {data['name']}. We are {data['emotion']} to see you go.")
     await asyncio.sleep(1)
 
 
@@ -75,6 +74,52 @@ async def terminate_user(request):
 async def default_route(request):
     log.warn(f"Unrecognized letter request: {request.path} - {request.body}")
     await asyncio.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Post messages to the exchange however, you like.
+However, the `PATH` variable should be included as a header on the posted message.
+
+```python
+import argparse
+import asyncio
+import logging
+import os
+import sys
+import aio_pika
+
+log = logging.getLogger(__name__)
+
+
+async def main():
+    parser = argparse.ArgumentParser(description="Processes commands from message queue")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("exchange")
+    parser.add_argument("path")
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
+    )
+
+    url = os.environ["AMQP_URL"]
+    body = sys.stdin.read().encode()
+
+    log.info("Connecting to broker")
+    connection = await aio_pika.connect_robust(url)
+    channel = await connection.channel()
+    exchange = await channel.get_exchange(args.exchange)
+
+    log.info("Posting message")
+    message = aio_pika.Message(body=body, headers={"PATH": args.path})
+    await exchange.publish(message, routing_key='')
+
+    log.info("Shutting down")
+    await connection.close()
 
 
 if __name__ == "__main__":
