@@ -1,29 +1,25 @@
-import os
-import io
+from pathlib import Path
 import re
 from setuptools import setup
 
-
-def read(*names, **kwargs):
-    path = os.path.join(os.path.dirname(__file__), *names)
-    with io.open(path, encoding=kwargs.get("encoding", "utf8")) as fp:
-        return fp.read()
+here = Path(__file__).parent
 
 
-def find_version(*file_paths):
-    version_file = read(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
-    if version_match:
-        return version_match.group(1)
+def find_version(path):
+    content = path.read_text(encoding="utf-8")
+    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
+    if match:
+        return match.group(1)
     raise RuntimeError("Unable to find version string.")
 
 
 setup(
     name="faat.granger",
-    version=find_version("faat", "granger", "__init__.py"),
+    version=find_version(here / "faat" / "granger" / "__init__.py"),
     description="Simplified async framework for AMQP workers",
-    long_description=read("README.md"),
-    url="https://faat.ca",
+    long_description=(here / "README.md").read_text("utf-8"),
+    long_description_content_type="text/markdown",
+    url="https://github.com/faatca/faat.granger",
     author="Aaron Milner",
     author_email="aaron.milner@gmail.com",
     license="MIT",
@@ -34,7 +30,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
     ],
-    keywords="",
     packages=["faat.granger"],
     install_requires=["aio-pika>=6.5.2"],
     python_requires=">=3.8",
